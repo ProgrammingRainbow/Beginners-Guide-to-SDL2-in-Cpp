@@ -2,8 +2,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
-#include <fmt/format.h>
+#include <format>
 #include <iostream>
+#include <memory>
 #include <random>
 
 void initialize_sdl();
@@ -69,20 +70,20 @@ void Game::init() {
         this->title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         this->width, this->height, SDL_WINDOW_SHOWN));
     if (!this->window) {
-        auto error = fmt::format("Error creating window: {}", SDL_GetError());
+        auto error = std::format("Error creating window: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     this->renderer.reset(
         SDL_CreateRenderer(this->window.get(), -1, SDL_RENDERER_ACCELERATED));
     if (!this->renderer) {
-        auto error = fmt::format("Error creating renderer: {}", SDL_GetError());
+        auto error = std::format("Error creating renderer: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     this->icon_surf.reset(IMG_Load("images/Cpp-logo.png"));
     if (!this->icon_surf) {
-        auto error = fmt::format("Error loading Surface: {}", IMG_GetError());
+        auto error = std::format("Error loading Surface: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
@@ -93,13 +94,13 @@ void Game::load_media() {
     this->background.reset(
         IMG_LoadTexture(this->renderer.get(), "images/background.png"));
     if (!this->background) {
-        auto error = fmt::format("Error loading Texture: {}", IMG_GetError());
+        auto error = std::format("Error loading Texture: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
     this->font.reset(TTF_OpenFont("fonts/freesansbold.ttf", this->font_size));
     if (!this->font) {
-        auto error = fmt::format("Error creating Font: {}", TTF_GetError());
+        auto error = std::format("Error creating Font: {}", TTF_GetError());
         throw std::runtime_error(error);
     }
 
@@ -107,7 +108,7 @@ void Game::load_media() {
         TTF_RenderText_Blended(this->font.get(), "SDL", font_color));
     if (!this->text_surf) {
         auto error =
-            fmt::format("Error loading text Surface: {}", TTF_GetError());
+            std::format("Error loading text Surface: {}", TTF_GetError());
         throw std::runtime_error(error);
     }
 
@@ -117,7 +118,7 @@ void Game::load_media() {
     this->text.reset(SDL_CreateTextureFromSurface(this->renderer.get(),
                                                   this->text_surf.get()));
     if (!this->text) {
-        auto error = fmt::format("Error creating Texture from Surface: {}",
+        auto error = std::format("Error creating Texture from Surface: {}",
                                  SDL_GetError());
         throw std::runtime_error(error);
     }
@@ -125,31 +126,31 @@ void Game::load_media() {
     this->sprite.reset(
         IMG_LoadTexture(this->renderer.get(), "images/Cpp-logo.png"));
     if (!this->sprite) {
-        auto error = fmt::format("Error loading Texture: {}", IMG_GetError());
+        auto error = std::format("Error loading Texture: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
     if (SDL_QueryTexture(sprite.get(), nullptr, nullptr, &this->sprite_rect.w,
                          &this->sprite_rect.h)) {
-        auto error = fmt::format("Error querying Texture: {}", IMG_GetError());
+        auto error = std::format("Error querying Texture: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
     this->cpp_sound.reset(Mix_LoadWAV("sounds/Cpp.ogg"));
     if (!this->cpp_sound) {
-        auto error = fmt::format("Error loading Chunk: {}", Mix_GetError());
+        auto error = std::format("Error loading Chunk: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 
     this->sdl_sound.reset(Mix_LoadWAV("sounds/SDL.ogg"));
     if (!this->sdl_sound) {
-        auto error = fmt::format("Error loading Chunk: {}", Mix_GetError());
+        auto error = std::format("Error loading Chunk: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 
     this->music.reset(Mix_LoadMUS("music/freesoftwaresong-8bit.ogg"));
     if (!this->music) {
-        auto error = fmt::format("Error loading Music: {}", Mix_GetError());
+        auto error = std::format("Error loading Music: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 }
@@ -193,7 +194,7 @@ void Game::sprite_update() {
 
 void Game::run() {
     if (Mix_PlayMusic(music.get(), -1)) {
-        auto error = fmt::format("Error playing Music: {}", Mix_GetError());
+        auto error = std::format("Error playing Music: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 
@@ -251,31 +252,31 @@ void initialize_sdl() {
     int mix_flags = MIX_INIT_OGG;
 
     if (SDL_Init(SDL_INIT_EVERYTHING)) {
-        auto error = fmt::format("Error initializing SDL: {}", SDL_GetError());
+        auto error = std::format("Error initializing SDL: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     if ((IMG_Init(img_flags) & img_flags) != img_flags) {
         auto error =
-            fmt::format("Error initializing SDL_image: {}", IMG_GetError());
+            std::format("Error initializing SDL_image: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
     if (TTF_Init()) {
         auto error =
-            fmt::format("Error initializing SDL_ttf: {}", TTF_GetError());
+            std::format("Error initializing SDL_ttf: {}", TTF_GetError());
         throw std::runtime_error(error);
     }
 
     if ((Mix_Init(mix_flags) & mix_flags) != mix_flags) {
         auto error =
-            fmt::format("Error initializing SDL_mixer: {}", Mix_GetError());
+            std::format("Error initializing SDL_mixer: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT,
                       MIX_DEFAULT_CHANNELS, 1024)) {
-        auto error = fmt::format("Error Opening Audio: {}", Mix_GetError());
+        auto error = std::format("Error Opening Audio: {}", Mix_GetError());
         throw std::runtime_error(error);
     }
 }
@@ -302,7 +303,7 @@ int main() {
         game.load_media();
         game.run();
     } catch (const std::runtime_error &e) {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
         exit_val = EXIT_FAILURE;
     }
 

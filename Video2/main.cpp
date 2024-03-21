@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
-#include <fmt/format.h>
+#include <format>
 #include <iostream>
+#include <memory>
 
 void initialize_sdl();
 void close_sdl();
@@ -32,14 +33,14 @@ void Game::init() {
         this->title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         this->width, this->height, SDL_WINDOW_SHOWN));
     if (!this->window) {
-        auto error = fmt::format("Error creating window: {}", SDL_GetError());
+        auto error = std::format("Error creating window: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     this->renderer.reset(
         SDL_CreateRenderer(this->window.get(), -1, SDL_RENDERER_ACCELERATED));
     if (!this->renderer) {
-        auto error = fmt::format("Error creating renderer: {}", SDL_GetError());
+        auto error = std::format("Error creating renderer: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 }
@@ -74,7 +75,7 @@ void Game::run() {
 
 void initialize_sdl() {
     if (SDL_Init(SDL_INIT_EVERYTHING)) {
-        auto error = fmt::format("Error initializing SDL: {}", SDL_GetError());
+        auto error = std::format("Error initializing SDL: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 }
@@ -90,7 +91,7 @@ int main() {
         game.init();
         game.run();
     } catch (const std::runtime_error &e) {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
         exit_val = EXIT_FAILURE;
     }
 
