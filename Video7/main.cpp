@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_ttf.h>
 #include <format>
 #include <iostream>
@@ -213,7 +212,7 @@ void Game::run() {
     }
 }
 
-void initilize_sdl() {
+void initialize_sdl() {
     int sdl_flags = SDL_INIT_EVERYTHING;
     int img_flags = IMG_INIT_PNG;
 
@@ -245,7 +244,7 @@ int main() {
     int exit_val = EXIT_SUCCESS;
 
     try {
-        initilize_sdl();
+        initialize_sdl();
         Game game;
         game.init();
         game.load_media();
