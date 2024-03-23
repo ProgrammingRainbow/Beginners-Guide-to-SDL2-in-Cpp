@@ -27,6 +27,7 @@ class Game {
     std::uniform_int_distribution<Uint8> rand_color;
     int font_size;
     SDL_Color font_color;
+    std::string text_str;
     SDL_Rect text_rect;
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
@@ -38,28 +39,30 @@ class Game {
 };
 
 Game::Game()
-    : title{"Create Text"}, gen{std::random_device()()}, rand_color{0, 255},
-      font_size{80}, font_color{255, 255, 255, 255},
+    : title{"Create Text"}, gen{}, rand_color{0, 255}, font_size{80},
+      font_color{255, 255, 255, 255}, text_str{"SDL"}, text_rect{0, 0, 0, 0},
       window{nullptr, SDL_DestroyWindow},
       renderer{nullptr, SDL_DestroyRenderer},
       background{nullptr, SDL_DestroyTexture}, font{nullptr, TTF_CloseFont},
       text_surf{nullptr, SDL_FreeSurface}, text{nullptr, SDL_DestroyTexture} {}
 
 void Game::init() {
-    this->window.reset(SDL_CreateWindow(
-        this->title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        this->width, this->height, SDL_WINDOW_SHOWN));
+    this->window.reset(
+        SDL_CreateWindow(this->title.c_str(), SDL_WINDOWPOS_CENTERED,
+                         SDL_WINDOWPOS_CENTERED, this->width, this->height, 0));
     if (!this->window) {
-        auto error = std::format("Error creating window: {}", SDL_GetError());
+        auto error = std::format("Error creating Window: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     this->renderer.reset(
         SDL_CreateRenderer(this->window.get(), -1, SDL_RENDERER_ACCELERATED));
     if (!this->renderer) {
-        auto error = std::format("Error creating renderer: {}", SDL_GetError());
+        auto error = std::format("Error creating Renderer: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
+
+    this->gen.seed(std::random_device()());
 }
 
 void Game::load_media() {
@@ -76,8 +79,8 @@ void Game::load_media() {
         throw std::runtime_error(error);
     }
 
-    this->text_surf.reset(
-        TTF_RenderText_Blended(this->font.get(), "SDL", font_color));
+    this->text_surf.reset(TTF_RenderText_Blended(
+        this->font.get(), this->text_str.c_str(), this->font_color));
     if (!this->text_surf) {
         auto error =
             std::format("Error loading text Surface: {}", TTF_GetError());
@@ -109,9 +112,10 @@ void Game::run() {
                     return;
                     break;
                 case SDL_SCANCODE_SPACE:
-                    SDL_SetRenderDrawColor(
-                        this->renderer.get(), this->rand_color(gen),
-                        this->rand_color(gen), this->rand_color(gen), 255);
+                    SDL_SetRenderDrawColor(this->renderer.get(),
+                                           this->rand_color(this->gen),
+                                           this->rand_color(this->gen),
+                                           this->rand_color(this->gen), 255);
                     break;
                 default:
                     break;
@@ -125,8 +129,9 @@ void Game::run() {
 
         SDL_RenderCopy(this->renderer.get(), this->background.get(), nullptr,
                        nullptr);
+
         SDL_RenderCopy(this->renderer.get(), this->text.get(), nullptr,
-                       &text_rect);
+                       &this->text_rect);
 
         SDL_RenderPresent(this->renderer.get());
 
@@ -134,23 +139,24 @@ void Game::run() {
     }
 }
 
-void initialize_sdl() {
+void initilize_sdl() {
+    int sdl_flags = SDL_INIT_EVERYTHING;
     int img_flags = IMG_INIT_PNG;
 
-    if (SDL_Init(SDL_INIT_EVERYTHING)) {
-        auto error = std::format("Error initializing SDL: {}", SDL_GetError());
+    if (SDL_Init(sdl_flags)) {
+        auto error = std::format("Error initialize SDL2: {}", SDL_GetError());
         throw std::runtime_error(error);
     }
 
     if ((IMG_Init(img_flags) & img_flags) != img_flags) {
         auto error =
-            std::format("Error initializing SDL_image: {}", IMG_GetError());
+            std::format("Error initialize SDL_image: {}", IMG_GetError());
         throw std::runtime_error(error);
     }
 
     if (TTF_Init()) {
         auto error =
-            std::format("Error initializing SDL_ttf: {}", TTF_GetError());
+            std::format("Error initialize SDL_ttf: {}", TTF_GetError());
         throw std::runtime_error(error);
     }
 }
@@ -165,7 +171,7 @@ int main() {
     int exit_val = EXIT_SUCCESS;
 
     try {
-        initialize_sdl();
+        initilize_sdl();
         Game game;
         game.init();
         game.load_media();
